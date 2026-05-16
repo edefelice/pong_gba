@@ -112,6 +112,24 @@ int main(void) {
             oam_buffer[2].attr1 = ATTR1_X(rpaddle_x) | ATTR1_SIZE_16x32;
     
             memcpy(MEM_OAM, oam_buffer, sizeof(oam_buffer));
+
+            // Restart pressing the A key
+            // Restart su pressione di A
+            u16 keys = ~REG_KEYINPUT & KEY_MASK;
+            if (keys & KEY_A) {
+                player_score = 0;
+                ai_score = 0;
+                ball_x = SCREEN_W / 2;
+                ball_y = SCREEN_H / 2;
+                ball_speed_x = 1;
+                ball_speed_y = 1;
+                lpaddle_y = SCREEN_H / 2 - 16;
+                rpaddle_y = SCREEN_H / 2 - 16;
+                flash_timer = 0;
+                flash_paddle = 0;
+                game_over = 0;
+                MEM_PAL_BG[0] = 0x0000;  // black background
+            }
             continue;
         }
 
