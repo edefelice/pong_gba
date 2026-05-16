@@ -21,6 +21,12 @@ int main(void) {
     s32 ball_speed_x = 1;
     s32 ball_speed_y = 1;
 
+    // paddles position and speed initialization
+    s32 lpaddle_x = 16;
+    s32 lpaddle_y = SCREEN_H / 2 - 16;
+    s32 paddle_speed = 2;
+     
+
     // Hide all sprites
     for (int i = 0; i < 128; i++) {
         oam_buffer[i].attr0 = ATTR0_HIDE;
@@ -30,7 +36,8 @@ int main(void) {
     }
 
     // Load sprite tiles in VRAM
-    memcpy(MEM_VRAM_OBJ, ballTiles, ballTilesLen);
+    memcpy(MEM_VRAM_OBJ, ballTiles, ballTilesLen); // ball
+    memcpy(&MEM_VRAM_OBJ[ballTilesLen/2], paddleTiles, paddleTilesLen); // left paddle
     // Load sprite palette
     memcpy(MEM_PAL_OBJ, ballPal, ballPalLen);
 
@@ -39,6 +46,11 @@ int main(void) {
     oam_buffer[0].attr0 = ATTR0_Y(ball_y) | ATTR0_SQUARE | ATTR0_4BPP;
     oam_buffer[0].attr1 = ATTR1_X(ball_x) | ATTR1_SIZE_8x8;
     oam_buffer[0].attr2 = ATTR2_ID(0) | ATTR2_PALBANK(0);
+
+    // left paddle
+    oam_buffer[1].attr0 = ATTR0_Y(lpaddle_y) | ATTR0_TALL | ATTR0_4BPP;
+    oam_buffer[1].attr1 = ATTR1_X(lpaddle_x) | ATTR1_SIZE_16x32;
+    oam_buffer[1].attr2 = ATTR2_ID(1) | ATTR2_PALBANK(0);
 
     memcpy(MEM_OAM, oam_buffer, sizeof(oam_buffer));
 
@@ -59,9 +71,29 @@ int main(void) {
             ball_speed_y = -ball_speed_y;
         }
 
+        // read input
+        u16 keys = ~REG_KEYINPUT & KEY_MASK;
+        if (keys & KEY_UP) {
+            lpaddle_y -= paddle_speed;
+            if (lpaddle_y < 0) {
+                lpaddle_y = 0;
+            }
+        }
+
+        if (keys & KEY_DOWN) {
+            lpaddle_y += paddle_speed;
+            if (lpaddle_y > SCREEN_H - 32) {
+                lpaddle_y = SCREEN_H - 32;
+            }
+        }
+
         // update ball position in OAM
         oam_buffer[0].attr0 = ATTR0_Y(ball_y) | ATTR0_SQUARE | ATTR0_4BPP;
         oam_buffer[0].attr1 = ATTR1_X(ball_x) | ATTR1_SIZE_8x8;
+
+        // update left paddle position in OAM
+        oam_buffer[1].attr0 = ATTR0_Y(lpaddle_y) | ATTR0_TALL | ATTR0_4BPP;
+        oam_buffer[1].attr1 = ATTR1_X(lpaddle_x) | ATTR1_SIZE_16x32;
 
         memcpy(MEM_OAM, oam_buffer, sizeof(oam_buffer));
     }
