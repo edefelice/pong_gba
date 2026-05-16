@@ -65,6 +65,13 @@ int main(void) {
     // Load sprite palette
     memcpy(MEM_PAL_OBJ, ballPal, ballPalLen);
 
+    // Load background tiles in CBB0
+    memcpy(MEM_VRAM_CHARBLOCK(0), courtTiles, courtTilesLen);
+    // Load background tilemap in SBB 28
+    memcpy(MEM_VRAM_SCREENBLOCK(28), courtMap, courtMapLen);
+    // Load background palette
+    memcpy(MEM_PAL_BG, courtPal, courtPalLen);
+
     // Set OAM
     // Ball at the centre of the screen.
     oam_buffer[0].attr0 = ATTR0_Y(ball_y) | ATTR0_SQUARE | ATTR0_4BPP;
@@ -83,8 +90,10 @@ int main(void) {
 
     memcpy(MEM_OAM, oam_buffer, sizeof(oam_buffer));
 
-    // Set display mode 0, sprite on, mapping 1D
-    REG_DISPCNT = DCNT_MODE0 | DCNT_OBJ | DCNT_OBJ_1D;
+    // configure BG0
+    REG_BG0CNT = BG_CBB(0) | BG_SBB(28) | BG_4BPP | BG_REG_32x32 | BG_PRIO(1);
+    // Set display mode 0, sprite on, mapping 1D, BG0
+    REG_DISPCNT = DCNT_MODE0 | DCNT_BG0 | DCNT_OBJ | DCNT_OBJ_1D;
 
     while(1) {
         // VBlank wait
