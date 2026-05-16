@@ -12,6 +12,7 @@ build/
 *.img.bin
 *.map.bin
 *.pal.bin
+lib/libgfx.a
 
 # Editor / IDE
 .vscode/
