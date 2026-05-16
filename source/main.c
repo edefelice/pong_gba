@@ -26,11 +26,16 @@ int main(void) {
     s32 ball_y = SCREEN_H / 2 - 4;
     s32 ball_speed_x = 1;
     s32 ball_speed_y = 1;
+    u32 ai_counter = 0;
 
     // paddles position and speed initialization
     s32 lpaddle_x = 16;
     s32 lpaddle_y = SCREEN_H / 2 - 16;
-    s32 paddle_speed = 2;
+    s32 lpaddle_speed = 2;
+
+    s32 rpaddle_x = SCREEN_W - 2 * 16;
+    s32 rpaddle_y = SCREEN_H / 2 - 16;
+    s32 rpaddle_speed = 1;
      
 
     // Hide all sprites
@@ -58,6 +63,11 @@ int main(void) {
     oam_buffer[1].attr1 = ATTR1_X(lpaddle_x) | ATTR1_SIZE_16x32;
     oam_buffer[1].attr2 = ATTR2_ID(1) | ATTR2_PALBANK(0);
 
+    // right paddle
+    oam_buffer[2].attr0 = ATTR0_Y(rpaddle_y) | ATTR0_TALL | ATTR0_4BPP;
+    oam_buffer[2].attr1 = ATTR1_X(rpaddle_x) | ATTR1_SIZE_16x32;
+    oam_buffer[2].attr2 = ATTR2_ID(1) | ATTR2_PALBANK(0);
+
     memcpy(MEM_OAM, oam_buffer, sizeof(oam_buffer));
 
     // Set display mode 0, sprite on, mapping 1D
@@ -79,6 +89,47 @@ int main(void) {
             ball_x = lpaddle_x + 16;
         }
 
+        // right paddle movement
+        // AI follows the ball
+        int rpaddle_center = rpaddle_y + 16;  // paddle vertical centre (h=32, half is 16)
+        int ball_center = ball_y + 4;         // ball center (h=8, half is 4)
+
+        ai_counter++;
+        if (ai_counter >= 2) {
+            ai_counter = 0;
+            if (ball_speed_x > 0) {
+                if (ball_center < rpaddle_center) {
+                    rpaddle_y -= rpaddle_speed;
+                }
+                else if (ball_center > rpaddle_center) {
+                    rpaddle_y += rpaddle_speed;
+                }
+            }
+            else {
+                int center = SCREEN_H / 2 - 16;
+                if (rpaddle_y < center) {
+                    rpaddle_y += rpaddle_speed;
+                }
+                else if (rpaddle_y > center) {
+                    rpaddle_y -= rpaddle_speed;
+                }
+        }
+        if (rpaddle_y < 0) {
+            rpaddle_y = 0;
+        }
+        if (rpaddle_y > SCREEN_H - 32) {
+            rpaddle_y = SCREEN_H - 32;
+        }
+        }
+
+        // right paddle collision
+        if (rect_overlap(ball_x, ball_y, 8, 8,
+                 rpaddle_x, rpaddle_y, 16, 32)) {
+            ball_speed_x = -ball_speed_x;
+            // Push the ball on the left so it doesn't block on the paddle
+            ball_x = rpaddle_x - 8;
+        }
+
         // ball bounce on walls
         if(ball_y < 0 || ball_y > SCREEN_H - 8) {
             ball_speed_y = -ball_speed_y;
@@ -90,14 +141,14 @@ int main(void) {
         // read input
         u16 keys = ~REG_KEYINPUT & KEY_MASK;
         if (keys & KEY_UP) {
-            lpaddle_y -= paddle_speed;
+            lpaddle_y -= lpaddle_speed;
             if (lpaddle_y < 0) {
                 lpaddle_y = 0;
             }
         }
 
         if (keys & KEY_DOWN) {
-            lpaddle_y += paddle_speed;
+            lpaddle_y += lpaddle_speed;
             if (lpaddle_y > SCREEN_H - 32) {
                 lpaddle_y = SCREEN_H - 32;
             }
@@ -110,6 +161,10 @@ int main(void) {
         // update left paddle position in OAM
         oam_buffer[1].attr0 = ATTR0_Y(lpaddle_y) | ATTR0_TALL | ATTR0_4BPP;
         oam_buffer[1].attr1 = ATTR1_X(lpaddle_x) | ATTR1_SIZE_16x32;
+
+        // update right paddle position in OAM
+        oam_buffer[2].attr0 = ATTR0_Y(rpaddle_y) | ATTR0_TALL | ATTR0_4BPP;
+        oam_buffer[2].attr1 = ATTR1_X(rpaddle_x) | ATTR1_SIZE_16x32;
 
         memcpy(MEM_OAM, oam_buffer, sizeof(oam_buffer));
     }
