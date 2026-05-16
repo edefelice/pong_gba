@@ -16,10 +16,10 @@ OBJ_ATTR oam_buffer[128];
 int main(void) {
 
     // ball position and speed initialization
-    u32 ball_x = SCREEN_W / 2;
-    u32 ball_y = SCREEN_H / 2;
-    u32 ball_speed_x = 1;
-    u32 ball_speed_y = 1;
+    s32 ball_x = SCREEN_W / 2 - 4;
+    s32 ball_y = SCREEN_H / 2 - 4;
+    s32 ball_speed_x = 1;
+    s32 ball_speed_y = 1;
 
     // Hide all sprites
     for (int i = 0; i < 128; i++) {
@@ -53,6 +53,11 @@ int main(void) {
         // update ball position based on speed
         ball_x += ball_speed_x;
         ball_y += ball_speed_y;
+
+        // ball bounce
+        if(ball_y < 0 || ball_y > SCREEN_H - 8) {
+            ball_speed_y = -ball_speed_y;
+        }
 
         // update ball position in OAM
         oam_buffer[0].attr0 = ATTR0_Y(ball_y) | ATTR0_SQUARE | ATTR0_4BPP;
