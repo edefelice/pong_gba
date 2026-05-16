@@ -21,6 +21,19 @@ int rect_overlap(int ax, int ay, int aw, int ah,
 
 int main(void) {
 
+    // score
+    u32 player_score = 0;
+    u32 ai_score = 0;
+    u32 win_score = 2;
+
+    // paddle flash after point
+    int flash_timer = 0;
+    int flash_paddle = 0; // 0 = none, 1 = player, 2 = ai
+    int flash_duration = 60;
+
+    // Game Over
+    int game_over = 0; // 0 = none, 1 = player wins, 2 = ai wins
+
     // ball position and speed initialization
     s32 ball_x = SCREEN_W / 2 - 4;
     s32 ball_y = SCREEN_H / 2 - 4;
@@ -78,6 +91,30 @@ int main(void) {
         while (REG_VCOUNT >= SCREEN_H);
         while (REG_VCOUNT < SCREEN_H);
 
+        // if game over happens, background flashes
+        if (game_over) {
+            static int win_blink = 0;
+            win_blink++;
+            int color = (win_blink / 30) & 1;
+            if (game_over == 1) {
+                MEM_PAL_BG[0] = color ? 0x03E0 : 0x0000; // green / black
+            }
+            else {
+                MEM_PAL_BG[0] = color ? 0x001F : 0x0000; // red / black
+            }
+
+            // shows paddles and ball in their final position
+            oam_buffer[0].attr0 = ATTR0_Y(ball_y) | ATTR0_SQUARE | ATTR0_4BPP;
+            oam_buffer[0].attr1 = ATTR1_X(ball_x) | ATTR1_SIZE_8x8;
+            oam_buffer[1].attr0 = ATTR0_Y(lpaddle_y) | ATTR0_TALL | ATTR0_4BPP;
+            oam_buffer[1].attr1 = ATTR1_X(lpaddle_x) | ATTR1_SIZE_16x32;
+            oam_buffer[2].attr0 = ATTR0_Y(rpaddle_y) | ATTR0_TALL | ATTR0_4BPP;
+            oam_buffer[2].attr1 = ATTR1_X(rpaddle_x) | ATTR1_SIZE_16x32;
+    
+            memcpy(MEM_OAM, oam_buffer, sizeof(oam_buffer));
+            continue;
+        }
+
         // update ball position based on speed
         ball_x += ball_speed_x;
         ball_y += ball_speed_y;
@@ -134,8 +171,30 @@ int main(void) {
         if(ball_y < 0 || ball_y > SCREEN_H - 8) {
             ball_speed_y = -ball_speed_y;
         }
-        if (ball_x <= 0 || ball_x >= SCREEN_W - 8) {
+
+        // ai scores
+        if (ball_x <= 0) {
+            ai_score++;
+            flash_paddle = 2;
+            flash_timer = flash_duration;
+            ball_x = SCREEN_W / 2;
+            ball_y = SCREEN_H / 2;
             ball_speed_x = -ball_speed_x;
+            if (ai_score >= win_score) {
+                game_over = 2;
+            }
+        }
+        // player scores
+        if (ball_x >= SCREEN_W - 8) {
+            player_score++;
+            flash_paddle = 1;
+            flash_timer = flash_duration;
+            ball_x = SCREEN_W / 2;
+            ball_y = SCREEN_H / 2;
+            ball_speed_x = -ball_speed_x;
+            if (player_score >= win_score) {
+                game_over = 1;
+            }
         }
 
         // read input
@@ -154,16 +213,44 @@ int main(void) {
             }
         }
 
+        // paddle flash after scoring
+        int hide_player = 0;
+        int hide_ai = 0;
+
+        if (flash_timer > 0) {
+            flash_timer--;
+            int blink = (flash_timer / 8) & 1;
+            if (flash_paddle == 1 && blink) {
+                hide_player = 1;
+            }
+            if (flash_paddle == 2 && blink) {
+                hide_ai = 1;
+            }
+            if (flash_timer == 0) {
+                flash_paddle = 0;
+            }
+        }
+
         // update ball position in OAM
         oam_buffer[0].attr0 = ATTR0_Y(ball_y) | ATTR0_SQUARE | ATTR0_4BPP;
         oam_buffer[0].attr1 = ATTR1_X(ball_x) | ATTR1_SIZE_8x8;
 
-        // update left paddle position in OAM
-        oam_buffer[1].attr0 = ATTR0_Y(lpaddle_y) | ATTR0_TALL | ATTR0_4BPP;
+        // update left paddle position in OAM (flash if scores)
+        if (hide_player) {
+            oam_buffer[1].attr0 = ATTR0_HIDE;
+        }
+        else {
+            oam_buffer[1].attr0 = ATTR0_Y(lpaddle_y) | ATTR0_TALL | ATTR0_4BPP;
+        }
         oam_buffer[1].attr1 = ATTR1_X(lpaddle_x) | ATTR1_SIZE_16x32;
 
         // update right paddle position in OAM
-        oam_buffer[2].attr0 = ATTR0_Y(rpaddle_y) | ATTR0_TALL | ATTR0_4BPP;
+        if (hide_ai) {
+            oam_buffer[2].attr0 = ATTR0_HIDE;
+        }
+        else {
+            oam_buffer[2].attr0 = ATTR0_Y(rpaddle_y) | ATTR0_TALL | ATTR0_4BPP;
+        }
         oam_buffer[2].attr1 = ATTR1_X(rpaddle_x) | ATTR1_SIZE_16x32;
 
         memcpy(MEM_OAM, oam_buffer, sizeof(oam_buffer));
