@@ -13,6 +13,12 @@ typedef struct tagOBJ_ATTR
 
 OBJ_ATTR oam_buffer[128];
 
+int rect_overlap(int ax, int ay, int aw, int ah,
+                 int bx, int by, int bw, int bh) {
+    return (ax < bx + bw) && (ax + aw > bx) &&
+           (ay < by + bh) && (ay + ah > by);
+}
+
 int main(void) {
 
     // ball position and speed initialization
@@ -66,9 +72,19 @@ int main(void) {
         ball_x += ball_speed_x;
         ball_y += ball_speed_y;
 
-        // ball bounce
+        // left paddle collision
+        if (rect_overlap(ball_x, ball_y, 8, 8,
+                 lpaddle_x, lpaddle_y, 16, 32)) {
+            ball_speed_x = -ball_speed_x;
+            ball_x = lpaddle_x + 16;
+        }
+
+        // ball bounce on walls
         if(ball_y < 0 || ball_y > SCREEN_H - 8) {
             ball_speed_y = -ball_speed_y;
+        }
+        if (ball_x <= 0 || ball_x >= SCREEN_W - 8) {
+            ball_speed_x = -ball_speed_x;
         }
 
         // read input
