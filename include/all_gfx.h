@@ -2,7 +2,7 @@
 // all_gfx.h
 //
 // Header che unisce tutti gli header grafici
-// Data: 2026-05-17 12:39:23
+// Data: 2026-05-17 13:00:46
 
 #ifdef __cplusplus
 extern "C"{
@@ -18,7 +18,7 @@ extern "C"{
 //	+ 1 tiles not compressed
 //	Total size: 512 + 32 = 544
 //
-//	Time-stamp: 2026-05-17, 12:39:22
+//	Time-stamp: 2026-05-17, 13:00:45
 //	Exported by Cearn's GBA Image Transmogrifier, v0.9.2
 //	( http://www.coranac.com/projects/#grit )
 //
@@ -47,7 +47,7 @@ extern const unsigned short ballPal[256];
 //	+ regular map (in SBBs), not compressed, 32x32 
 //	Total size: 512 + 96 + 2048 = 2656
 //
-//	Time-stamp: 2026-05-17, 12:39:22
+//	Time-stamp: 2026-05-17, 13:00:46
 //	Exported by Cearn's GBA Image Transmogrifier, v0.9.2
 //	( http://www.coranac.com/projects/#grit )
 //
@@ -73,13 +73,13 @@ extern const unsigned short courtPal[256];
 
 //======================================================================
 //
-//	paddle, 16x32@4, 
+//	paddle, 8x32@4, 
 //	Transparent color : FF,00,FF
 //	+ palette 256 entries, not compressed
-//	+ 8 tiles not compressed
-//	Total size: 512 + 256 = 768
+//	+ 4 tiles not compressed
+//	Total size: 512 + 128 = 640
 //
-//	Time-stamp: 2026-05-17, 12:39:23
+//	Time-stamp: 2026-05-17, 13:00:46
 //	Exported by Cearn's GBA Image Transmogrifier, v0.9.2
 //	( http://www.coranac.com/projects/#grit )
 //
@@ -88,8 +88,8 @@ extern const unsigned short courtPal[256];
 #ifndef GRIT_PADDLE_H
 #define GRIT_PADDLE_H
 
-#define paddleTilesLen 256
-extern const unsigned int paddleTiles[64];
+#define paddleTilesLen 128
+extern const unsigned int paddleTiles[32];
 
 #define paddlePalLen 512
 extern const unsigned short paddlePal[256];

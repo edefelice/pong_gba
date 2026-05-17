@@ -40,6 +40,7 @@ typedef signed int     s32;
 
 // --- OAM attribute 1 ---
 #define ATTR1_SIZE_8x8      0x0000
+#define ATTR1_SIZE_8x32     0x4000
 #define ATTR1_SIZE_16x32    0x8000
 #define ATTR1_X(n)          ((n) & 0x1FF)
 

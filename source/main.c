@@ -79,12 +79,12 @@ int main(void) {
 
     // left paddle
     oam_buffer[1].attr0 = ATTR0_Y(lpaddle_y) | ATTR0_TALL | ATTR0_4BPP;
-    oam_buffer[1].attr1 = ATTR1_X(lpaddle_x) | ATTR1_SIZE_16x32;
+    oam_buffer[1].attr1 = ATTR1_X(lpaddle_x) | ATTR1_SIZE_8x32;
     oam_buffer[1].attr2 = ATTR2_ID(1) | ATTR2_PALBANK(0);
 
     // right paddle
     oam_buffer[2].attr0 = ATTR0_Y(rpaddle_y) | ATTR0_TALL | ATTR0_4BPP;
-    oam_buffer[2].attr1 = ATTR1_X(rpaddle_x) | ATTR1_SIZE_16x32;
+    oam_buffer[2].attr1 = ATTR1_X(rpaddle_x) | ATTR1_SIZE_8x32;
     oam_buffer[2].attr2 = ATTR2_ID(1) | ATTR2_PALBANK(0);
 
     memcpy(MEM_OAM, oam_buffer, sizeof(oam_buffer));
@@ -115,9 +115,9 @@ int main(void) {
             oam_buffer[0].attr0 = ATTR0_Y(ball_y) | ATTR0_SQUARE | ATTR0_4BPP;
             oam_buffer[0].attr1 = ATTR1_X(ball_x) | ATTR1_SIZE_8x8;
             oam_buffer[1].attr0 = ATTR0_Y(lpaddle_y) | ATTR0_TALL | ATTR0_4BPP;
-            oam_buffer[1].attr1 = ATTR1_X(lpaddle_x) | ATTR1_SIZE_16x32;
+            oam_buffer[1].attr1 = ATTR1_X(lpaddle_x) | ATTR1_SIZE_8x32;
             oam_buffer[2].attr0 = ATTR0_Y(rpaddle_y) | ATTR0_TALL | ATTR0_4BPP;
-            oam_buffer[2].attr1 = ATTR1_X(rpaddle_x) | ATTR1_SIZE_16x32;
+            oam_buffer[2].attr1 = ATTR1_X(rpaddle_x) | ATTR1_SIZE_8x32;
     
             memcpy(MEM_OAM, oam_buffer, sizeof(oam_buffer));
 
@@ -146,9 +146,9 @@ int main(void) {
 
         // left paddle collision
         if (rect_overlap(ball_x, ball_y, 8, 8,
-                 lpaddle_x, lpaddle_y, 16, 32)) {
+                 lpaddle_x, lpaddle_y, 8, 32)) {
             ball_speed_x = -ball_speed_x;
-            ball_x = lpaddle_x + 16;
+            ball_x = lpaddle_x + 8;
 
             // ball acceleration
             if (ball_speed_x > 0 && ball_speed_x < 3) {
@@ -218,7 +218,7 @@ int main(void) {
 
         // right paddle collision
         if (rect_overlap(ball_x, ball_y, 8, 8,
-                 rpaddle_x, rpaddle_y, 16, 32)) {
+                 rpaddle_x, rpaddle_y, 8, 32)) {
             ball_speed_x = -ball_speed_x;
             // Push the ball on the left so it doesn't block on the paddle
             ball_x = rpaddle_x - 8;
@@ -257,8 +257,8 @@ int main(void) {
             ai_score++;
             flash_paddle = 2;
             flash_timer = flash_duration;
-            ball_x = SCREEN_W / 2;
-            ball_y = SCREEN_H / 2;
+            ball_x = SCREEN_W / 2 - 4;
+            ball_y = SCREEN_H / 2 - 4;
             ball_speed_x = -1; // reset to base speed (restart going left)
             ball_speed_y = 1;
             if (ai_score >= win_score) {
@@ -270,8 +270,8 @@ int main(void) {
             player_score++;
             flash_paddle = 1;
             flash_timer = flash_duration;
-            ball_x = SCREEN_W / 2;
-            ball_y = SCREEN_H / 2;
+            ball_x = SCREEN_W / 2 - 4;
+            ball_y = SCREEN_H / 2 - 4;
             ball_speed_x = 1; // reset to base speed (restart going right)
             ball_speed_y = 1;
             if (player_score >= win_score) {
@@ -324,7 +324,7 @@ int main(void) {
         else {
             oam_buffer[1].attr0 = ATTR0_Y(lpaddle_y) | ATTR0_TALL | ATTR0_4BPP;
         }
-        oam_buffer[1].attr1 = ATTR1_X(lpaddle_x) | ATTR1_SIZE_16x32;
+        oam_buffer[1].attr1 = ATTR1_X(lpaddle_x) | ATTR1_SIZE_8x32;
 
         // update right paddle position in OAM
         if (hide_ai) {
@@ -333,7 +333,7 @@ int main(void) {
         else {
             oam_buffer[2].attr0 = ATTR0_Y(rpaddle_y) | ATTR0_TALL | ATTR0_4BPP;
         }
-        oam_buffer[2].attr1 = ATTR1_X(rpaddle_x) | ATTR1_SIZE_16x32;
+        oam_buffer[2].attr1 = ATTR1_X(rpaddle_x) | ATTR1_SIZE_8x32;
 
         memcpy(MEM_OAM, oam_buffer, sizeof(oam_buffer));
     }
