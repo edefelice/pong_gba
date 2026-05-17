@@ -3,6 +3,15 @@
 #include "../include/registers.h"
 #include "../include/all_gfx.h"
 
+// --- Game constants ---
+#define DEAD_ZONE     16
+#define PADDLE_W       8
+#define PADDLE_H      32
+#define BALL_SIZE      8
+#define WIN_SCORE      2
+#define BASE_SPEED     1
+#define MAX_BALL_SPEED 3
+
 typedef struct tagOBJ_ATTR
 {
     u16 attr0;
@@ -38,24 +47,23 @@ int main(void) {
     // score
     u32 player_score = 0;
     u32 ai_score = 0;
-    u32 win_score = 2;
 
     // Game Over
     int game_over = 0; // 0 = none, 1 = player wins, 2 = ai wins
 
     // ball position and speed initialization
-    s32 ball_x = SCREEN_W / 2 - 4;
-    s32 ball_y = SCREEN_H / 2 - 4;
-    s32 ball_speed_x = 1;
-    s32 ball_speed_y = 1;
+    s32 ball_x = SCREEN_W / 2 - BALL_SIZE / 2;
+    s32 ball_y = SCREEN_H / 2 - BALL_SIZE / 2;
+    s32 ball_speed_x = BASE_SPEED;
+    s32 ball_speed_y = BASE_SPEED;
 
     // paddles position and speed initialization
-    s32 lpaddle_x = 16;
-    s32 lpaddle_y = SCREEN_H / 2 - 16;
+    s32 lpaddle_x = 2 * PADDLE_W;
+    s32 lpaddle_y = SCREEN_H / 2 - PADDLE_H / 2;
     s32 lpaddle_speed = 2;
 
-    s32 rpaddle_x = SCREEN_W - 2 * 16;
-    s32 rpaddle_y = SCREEN_H / 2 - 16;
+    s32 rpaddle_x = SCREEN_W - 2 * PADDLE_W;
+    s32 rpaddle_y = SCREEN_H / 2 - PADDLE_H / 2;
     s32 rpaddle_speed = 1;
      
 
@@ -158,18 +166,18 @@ int main(void) {
         ball_y += ball_speed_y;
 
         // left paddle collision
-        if (rect_overlap(ball_x, ball_y, 8, 8,
-                 lpaddle_x, lpaddle_y, 8, 32)) {
+        if (rect_overlap(ball_x, ball_y, BALL_SIZE, BALL_SIZE,
+                 lpaddle_x, lpaddle_y, PADDLE_W, PADDLE_H)) {
             ball_speed_x = -ball_speed_x;
-            ball_x = lpaddle_x + 8;
+            ball_x = lpaddle_x + BALL_SIZE;
 
             // ball acceleration
-            if (ball_speed_x > 0 && ball_speed_x < 3) {
+            if (ball_speed_x > 0 && ball_speed_x < MAX_BALL_SPEED) {
                 ball_speed_x++;
             }
 
             // changing angle of the bounce
-            int hit_offset = (ball_y + 4) - (lpaddle_y + 16);
+            int hit_offset = (ball_y + BALL_SIZE / 2) - (lpaddle_y + PADDLE_H / 2);
             if (hit_offset < -10) {
                 ball_speed_y = -2;
             }
@@ -199,11 +207,11 @@ int main(void) {
             if (predicted_y < 0) {
                 predicted_y = -predicted_y;
             }
-            if (predicted_y > SCREEN_H - 8) {
-                predicted_y = 2 * (SCREEN_H - 8) - predicted_y;
+            if (predicted_y > SCREEN_H - BALL_SIZE) {
+                predicted_y = 2 * (SCREEN_H - BALL_SIZE) - predicted_y;
             }
     
-            int target = predicted_y - 16;
+            int target = predicted_y - DEAD_ZONE;
             if (rpaddle_y < target) {
                 rpaddle_y += rpaddle_speed;
             }
@@ -213,7 +221,7 @@ int main(void) {
         }
         else {
             // The ball is going away, come back to the center
-            int center = SCREEN_H / 2 - 16;
+            int center = SCREEN_H / 2 - PADDLE_H / 2;
             if (rpaddle_y < center) {
                 rpaddle_y += rpaddle_speed;
             }
@@ -222,27 +230,27 @@ int main(void) {
             }
         }
         // Clipping
-        if (rpaddle_y < 16) {
-            rpaddle_y = 16;
+        if (rpaddle_y < DEAD_ZONE) {
+            rpaddle_y = DEAD_ZONE;
         }
-        if (rpaddle_y > SCREEN_H - 48) {
-            rpaddle_y = SCREEN_H - 48;
+        if (rpaddle_y > SCREEN_H - PADDLE_H - DEAD_ZONE) {
+            rpaddle_y = SCREEN_H - PADDLE_H - DEAD_ZONE;
         }
 
         // right paddle collision
-        if (rect_overlap(ball_x, ball_y, 8, 8,
-                 rpaddle_x, rpaddle_y, 8, 32)) {
+        if (rect_overlap(ball_x, ball_y, BALL_SIZE, BALL_SIZE,
+                 rpaddle_x, rpaddle_y, PADDLE_W, PADDLE_H)) {
             ball_speed_x = -ball_speed_x;
             // Push the ball on the left so it doesn't block on the paddle
-            ball_x = rpaddle_x - 8;
+            ball_x = rpaddle_x - BALL_SIZE;
 
             // ball acceleration
-            if (ball_speed_x < 0 && ball_speed_x > -3) {
+            if (ball_speed_x < 0 && ball_speed_x > -MAX_BALL_SPEED) {
                 ball_speed_x--;
             }
 
             // changing angle of the bounce
-            int hit_offset = (ball_y + 4) - (rpaddle_y + 16);
+            int hit_offset = (ball_y + BALL_SIZE / 2) - (rpaddle_y + PADDLE_H / 2);
             if (hit_offset < -10) {
                 ball_speed_y = -2;
             }
@@ -261,31 +269,31 @@ int main(void) {
         }
 
         // ball bounce on walls
-        if(ball_y < 0 || ball_y > SCREEN_H - 8) {
+        if(ball_y < 0 || ball_y > SCREEN_H - BALL_SIZE) {
             ball_speed_y = -ball_speed_y;
         }
 
         // ai scores
         if (ball_x <= 0) {
             ai_score++;
-            ball_x = SCREEN_W / 2 - 4;
-            ball_y = SCREEN_H / 2 - 4;
-            ball_speed_x = -1; // reset to base speed (restart going left)
-            ball_speed_y = 1;
+            ball_x = SCREEN_W / 2 - BALL_SIZE / 2;
+            ball_y = SCREEN_H / 2 - BALL_SIZE / 2;
+            ball_speed_x = -BASE_SPEED; // reset to base speed (restart going left)
+            ball_speed_y = BASE_SPEED;
             draw_score(player_score, ai_score);
-            if (ai_score >= win_score) {
+            if (ai_score >= WIN_SCORE) {
                 game_over = 2;
             }
         }
         // player scores
-        if (ball_x >= SCREEN_W - 8) {
+        if (ball_x >= SCREEN_W - BALL_SIZE) {
             player_score++;
-            ball_x = SCREEN_W / 2 - 4;
-            ball_y = SCREEN_H / 2 - 4;
-            ball_speed_x = 1; // reset to base speed (restart going right)
-            ball_speed_y = 1;
+            ball_x = SCREEN_W / 2 - BALL_SIZE / 2;
+            ball_y = SCREEN_H / 2 - BALL_SIZE / 2;
+            ball_speed_x = BASE_SPEED; // reset to base speed (restart going right)
+            ball_speed_y = BASE_SPEED;
             draw_score(player_score, ai_score);
-            if (player_score >= win_score) {
+            if (player_score >= WIN_SCORE) {
                 game_over = 1;
             }
         }
@@ -294,15 +302,15 @@ int main(void) {
         u16 keys = ~REG_KEYINPUT & KEY_MASK;
         if (keys & KEY_UP) {
             lpaddle_y -= lpaddle_speed;
-            if (lpaddle_y < 16) {
-                lpaddle_y = 16;
+            if (lpaddle_y < DEAD_ZONE) {
+                lpaddle_y = DEAD_ZONE;
             }
         }
 
         if (keys & KEY_DOWN) {
             lpaddle_y += lpaddle_speed;
-            if (lpaddle_y > SCREEN_H - 48) {
-                lpaddle_y = SCREEN_H - 48;
+            if (lpaddle_y > SCREEN_H - PADDLE_H - DEAD_ZONE) {
+                lpaddle_y = SCREEN_H - PADDLE_H - DEAD_ZONE;
             }
         }
 
