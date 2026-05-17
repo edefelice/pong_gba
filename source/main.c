@@ -125,6 +125,23 @@ void update_ai_paddle(void) {
     }
 }
 
+void update_player_paddle(void) {
+    u16 keys = ~REG_KEYINPUT & KEY_MASK;
+        if (keys & KEY_UP) {
+            lpaddle_y -= lpaddle_speed;
+            if (lpaddle_y < DEAD_ZONE) {
+                lpaddle_y = DEAD_ZONE;
+            }
+        }
+
+        if (keys & KEY_DOWN) {
+            lpaddle_y += lpaddle_speed;
+            if (lpaddle_y > SCREEN_H - PADDLE_H - DEAD_ZONE) {
+                lpaddle_y = SCREEN_H - PADDLE_H - DEAD_ZONE;
+            }
+        }
+}
+
 int main(void) {
 
     // Hide all sprites
@@ -246,6 +263,7 @@ int main(void) {
             }
         }
 
+        // ai paddle movement
         update_ai_paddle();
         // right paddle collision
         if (rect_overlap(ball_x, ball_y, BALL_SIZE, BALL_SIZE,
@@ -309,20 +327,7 @@ int main(void) {
         }
 
         // read input
-        u16 keys = ~REG_KEYINPUT & KEY_MASK;
-        if (keys & KEY_UP) {
-            lpaddle_y -= lpaddle_speed;
-            if (lpaddle_y < DEAD_ZONE) {
-                lpaddle_y = DEAD_ZONE;
-            }
-        }
-
-        if (keys & KEY_DOWN) {
-            lpaddle_y += lpaddle_speed;
-            if (lpaddle_y > SCREEN_H - PADDLE_H - DEAD_ZONE) {
-                lpaddle_y = SCREEN_H - PADDLE_H - DEAD_ZONE;
-            }
-        }
+        update_player_paddle();
 
         // update ball position in OAM
         oam_buffer[0].attr0 = ATTR0_Y(ball_y) | ATTR0_SQUARE | ATTR0_4BPP;
