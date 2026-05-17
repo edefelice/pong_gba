@@ -8,9 +8,10 @@
 #define PADDLE_W       8
 #define PADDLE_H      32
 #define BALL_SIZE      8
-#define WIN_SCORE      11
+#define WIN_SCORE     11
 #define BASE_SPEED     2
 #define MAX_BALL_SPEED 6
+#define PADDLE_MARGIN 16
 
 // --- Game state ---
 u32 player_score;
@@ -73,11 +74,11 @@ void reset_game(void) {
     ball_speed_x = (r & 1) ? BASE_SPEED : -BASE_SPEED;
     ball_speed_y = (r & 2) ? BASE_SPEED : -BASE_SPEED;
     
-    lpaddle_x = 16;
+    lpaddle_x = PADDLE_MARGIN;
     lpaddle_y = SCREEN_H / 2 - PADDLE_H / 2;
     lpaddle_speed = 2;
     
-    rpaddle_x = SCREEN_W - 2 * 16;
+    rpaddle_x = SCREEN_W - PADDLE_MARGIN - PADDLE_W;
     rpaddle_y = SCREEN_H / 2 - PADDLE_H / 2;
     rpaddle_speed = 1;
     
