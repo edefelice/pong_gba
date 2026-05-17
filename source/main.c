@@ -12,6 +12,24 @@
 #define BASE_SPEED     1
 #define MAX_BALL_SPEED 3
 
+// --- Game state ---
+u32 player_score;
+u32 ai_score;
+int game_over;
+
+s32 ball_x;
+s32 ball_y;
+s32 ball_speed_x;
+s32 ball_speed_y;
+
+s32 lpaddle_x;
+s32 lpaddle_y;
+s32 lpaddle_speed;
+
+s32 rpaddle_x;
+s32 rpaddle_y;
+s32 rpaddle_speed;
+
 typedef struct tagOBJ_ATTR
 {
     u16 attr0;
@@ -42,30 +60,29 @@ void draw_score (int player, int ai) {
 
 }
 
+void reset_game(void) {
+    player_score = 0;
+    ai_score = 0;
+    game_over = 0;
+    
+    ball_x = SCREEN_W / 2 - BALL_SIZE / 2;
+    ball_y = SCREEN_H / 2 - BALL_SIZE / 2;
+    ball_speed_x = BASE_SPEED;
+    ball_speed_y = BASE_SPEED;
+    
+    lpaddle_x = 16;
+    lpaddle_y = SCREEN_H / 2 - PADDLE_H / 2;
+    lpaddle_speed = 2;
+    
+    rpaddle_x = SCREEN_W - 2 * 16;
+    rpaddle_y = SCREEN_H / 2 - PADDLE_H / 2;
+    rpaddle_speed = 1;
+    
+    MEM_PAL_BG[0] = 0x0000;
+    draw_score(0, 0);
+}
+
 int main(void) {
-
-    // score
-    u32 player_score = 0;
-    u32 ai_score = 0;
-
-    // Game Over
-    int game_over = 0; // 0 = none, 1 = player wins, 2 = ai wins
-
-    // ball position and speed initialization
-    s32 ball_x = SCREEN_W / 2 - BALL_SIZE / 2;
-    s32 ball_y = SCREEN_H / 2 - BALL_SIZE / 2;
-    s32 ball_speed_x = BASE_SPEED;
-    s32 ball_speed_y = BASE_SPEED;
-
-    // paddles position and speed initialization
-    s32 lpaddle_x = 2 * PADDLE_W;
-    s32 lpaddle_y = SCREEN_H / 2 - PADDLE_H / 2;
-    s32 lpaddle_speed = 2;
-
-    s32 rpaddle_x = SCREEN_W - 2 * PADDLE_W;
-    s32 rpaddle_y = SCREEN_H / 2 - PADDLE_H / 2;
-    s32 rpaddle_speed = 1;
-     
 
     // Hide all sprites
     for (int i = 0; i < 128; i++) {
@@ -115,7 +132,8 @@ int main(void) {
     // Set display mode 0, sprite on, mapping 1D, BG0
     REG_DISPCNT = DCNT_MODE0 | DCNT_BG0 | DCNT_OBJ | DCNT_OBJ_1D;
 
-    draw_score(0, 0); // initialize score
+    reset_game();
+
     while(1) {
         // VBlank wait
         while (REG_VCOUNT >= SCREEN_H);
@@ -146,17 +164,7 @@ int main(void) {
             // Restart pressing the A button
             u16 keys = ~REG_KEYINPUT & KEY_MASK;
             if (keys & KEY_A) {
-                player_score = 0;
-                ai_score = 0;
-                ball_x = SCREEN_W / 2;
-                ball_y = SCREEN_H / 2;
-                ball_speed_x = 1;
-                ball_speed_y = 1;
-                lpaddle_y = SCREEN_H / 2 - 16;
-                rpaddle_y = SCREEN_H / 2 - 16;
-                game_over = 0;
-                MEM_PAL_BG[0] = 0x0000;  // black background
-                draw_score(0, 0);
+                reset_game();
             }
             continue;
         }
