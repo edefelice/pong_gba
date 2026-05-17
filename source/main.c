@@ -220,6 +220,37 @@ void update_ball(void) {
     }
 }
 
+void render_sprites(void) {
+    oam_buffer[0].attr0 = ATTR0_Y(ball_y) | ATTR0_SQUARE | ATTR0_4BPP;
+    oam_buffer[0].attr1 = ATTR1_X(ball_x) | ATTR1_SIZE_8x8;
+    
+    oam_buffer[1].attr0 = ATTR0_Y(lpaddle_y) | ATTR0_TALL | ATTR0_4BPP;
+    oam_buffer[1].attr1 = ATTR1_X(lpaddle_x) | ATTR1_SIZE_8x32;
+    
+    oam_buffer[2].attr0 = ATTR0_Y(rpaddle_y) | ATTR0_TALL | ATTR0_4BPP;
+    oam_buffer[2].attr1 = ATTR1_X(rpaddle_x) | ATTR1_SIZE_8x32;
+    
+    memcpy(MEM_OAM, oam_buffer, sizeof(oam_buffer));
+}
+
+void handle_game_over(void) {
+    static int win_blink = 0;
+    win_blink++;
+    int color = (win_blink / 30) & 1;
+    if (game_over == 1) {
+        MEM_PAL_BG[0] = color ? 0x03E0 : 0x0000;  // green / black
+    } else {
+        MEM_PAL_BG[0] = color ? 0x001F : 0x0000;  // red / black
+    }
+    
+    render_sprites();
+    
+    u16 keys = ~REG_KEYINPUT & KEY_MASK;
+    if (keys & KEY_A) {
+        reset_game();
+    }
+}
+
 int main(void) {
 
     // Hide all sprites
@@ -279,56 +310,15 @@ int main(void) {
 
         // if game over happens, background flashes
         if (game_over) {
-            static int win_blink = 0;
-            win_blink++;
-            int color = (win_blink / 30) & 1;
-            if (game_over == 1) {
-                MEM_PAL_BG[0] = color ? 0x03E0 : 0x0000; // green / black
-            }
-            else {
-                MEM_PAL_BG[0] = color ? 0x001F : 0x0000; // red / black
-            }
-
-            // shows paddles and ball in their final position
-            oam_buffer[0].attr0 = ATTR0_Y(ball_y) | ATTR0_SQUARE | ATTR0_4BPP;
-            oam_buffer[0].attr1 = ATTR1_X(ball_x) | ATTR1_SIZE_8x8;
-            oam_buffer[1].attr0 = ATTR0_Y(lpaddle_y) | ATTR0_TALL | ATTR0_4BPP;
-            oam_buffer[1].attr1 = ATTR1_X(lpaddle_x) | ATTR1_SIZE_8x32;
-            oam_buffer[2].attr0 = ATTR0_Y(rpaddle_y) | ATTR0_TALL | ATTR0_4BPP;
-            oam_buffer[2].attr1 = ATTR1_X(rpaddle_x) | ATTR1_SIZE_8x32;
-    
-            memcpy(MEM_OAM, oam_buffer, sizeof(oam_buffer));
-
-            // Restart pressing the A button
-            u16 keys = ~REG_KEYINPUT & KEY_MASK;
-            if (keys & KEY_A) {
-                reset_game();
-            }
+            handle_game_over();
             continue;
         }
 
-        // Update Ball position
         update_ball();
-
-        // ai paddle movement
         update_ai_paddle();
-
-        // read input
         update_player_paddle();
 
-        // update ball position in OAM
-        oam_buffer[0].attr0 = ATTR0_Y(ball_y) | ATTR0_SQUARE | ATTR0_4BPP;
-        oam_buffer[0].attr1 = ATTR1_X(ball_x) | ATTR1_SIZE_8x8;
-
-        // update left paddle position in OAM
-        oam_buffer[1].attr0 = ATTR0_Y(lpaddle_y) | ATTR0_TALL | ATTR0_4BPP;
-        oam_buffer[1].attr1 = ATTR1_X(lpaddle_x) | ATTR1_SIZE_8x32;
-
-        // update right paddle position in OAM
-        oam_buffer[2].attr0 = ATTR0_Y(rpaddle_y) | ATTR0_TALL | ATTR0_4BPP;
-        oam_buffer[2].attr1 = ATTR1_X(rpaddle_x) | ATTR1_SIZE_8x32;
-
-        memcpy(MEM_OAM, oam_buffer, sizeof(oam_buffer));
+        render_sprites();
     }
     return 0;
     
