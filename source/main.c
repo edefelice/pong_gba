@@ -82,6 +82,49 @@ void reset_game(void) {
     draw_score(0, 0);
 }
 
+void update_ai_paddle(void) {
+
+    if (ball_speed_x > 0) {
+        // The ball is coming, predict y position
+        int dx = rpaddle_x - ball_x;
+        int frames_to_reach = dx / ball_speed_x;
+        int predicted_y = ball_y + ball_speed_y * frames_to_reach;
+    
+        // Bounce on walls case
+        if (predicted_y < 0) {
+            predicted_y = -predicted_y;
+        }
+        if (predicted_y > SCREEN_H - BALL_SIZE) {
+            predicted_y = 2 * (SCREEN_H - BALL_SIZE) - predicted_y;
+        }
+    
+        int target = predicted_y - DEAD_ZONE;
+        if (rpaddle_y < target) {
+            rpaddle_y += rpaddle_speed;
+        }
+        else if (rpaddle_y > target) {
+            rpaddle_y -= rpaddle_speed;
+        }
+    }
+    else {
+        // The ball is going away, come back to the center
+        int center = SCREEN_H / 2 - PADDLE_H / 2;
+        if (rpaddle_y < center) {
+            rpaddle_y += rpaddle_speed;
+        }
+        else if (rpaddle_y > center) {
+            rpaddle_y -= rpaddle_speed;
+        }
+    }
+    // Clipping
+    if (rpaddle_y < DEAD_ZONE) {
+        rpaddle_y = DEAD_ZONE;
+    }
+    if (rpaddle_y > SCREEN_H - PADDLE_H - DEAD_ZONE) {
+        rpaddle_y = SCREEN_H - PADDLE_H - DEAD_ZONE;
+    }
+}
+
 int main(void) {
 
     // Hide all sprites
@@ -203,48 +246,7 @@ int main(void) {
             }
         }
 
-        // right paddle movement
-        // Predictive AI
-        if (ball_speed_x > 0) {
-            // The ball is coming, predict position
-            int dx = rpaddle_x - ball_x;
-            int frames_to_reach = dx / ball_speed_x;
-            int predicted_y = ball_y + ball_speed_y * frames_to_reach;
-    
-            // Bounce on walls case
-            if (predicted_y < 0) {
-                predicted_y = -predicted_y;
-            }
-            if (predicted_y > SCREEN_H - BALL_SIZE) {
-                predicted_y = 2 * (SCREEN_H - BALL_SIZE) - predicted_y;
-            }
-    
-            int target = predicted_y - DEAD_ZONE;
-            if (rpaddle_y < target) {
-                rpaddle_y += rpaddle_speed;
-            }
-            else if (rpaddle_y > target) {
-                rpaddle_y -= rpaddle_speed;
-            }
-        }
-        else {
-            // The ball is going away, come back to the center
-            int center = SCREEN_H / 2 - PADDLE_H / 2;
-            if (rpaddle_y < center) {
-                rpaddle_y += rpaddle_speed;
-            }
-            else if (rpaddle_y > center) {
-                rpaddle_y -= rpaddle_speed;
-            }
-        }
-        // Clipping
-        if (rpaddle_y < DEAD_ZONE) {
-            rpaddle_y = DEAD_ZONE;
-        }
-        if (rpaddle_y > SCREEN_H - PADDLE_H - DEAD_ZONE) {
-            rpaddle_y = SCREEN_H - PADDLE_H - DEAD_ZONE;
-        }
-
+        update_ai_paddle();
         // right paddle collision
         if (rect_overlap(ball_x, ball_y, BALL_SIZE, BALL_SIZE,
                  rpaddle_x, rpaddle_y, PADDLE_W, PADDLE_H)) {
