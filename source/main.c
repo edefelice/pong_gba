@@ -122,8 +122,7 @@ int main(void) {
     
             memcpy(MEM_OAM, oam_buffer, sizeof(oam_buffer));
 
-            // Restart pressing the A key
-            // Restart su pressione di A
+            // Restart pressing the A button
             u16 keys = ~REG_KEYINPUT & KEY_MASK;
             if (keys & KEY_A) {
                 player_score = 0;
@@ -151,6 +150,24 @@ int main(void) {
                  lpaddle_x, lpaddle_y, 16, 32)) {
             ball_speed_x = -ball_speed_x;
             ball_x = lpaddle_x + 16;
+
+            // changing angle of the bounce
+            int hit_offset = (ball_y + 4) - (lpaddle_y + 16);
+            if (hit_offset < -10) {
+                ball_speed_y = -2;
+            }
+            else if (hit_offset < -4) {
+                ball_speed_y = -1;
+            }
+            else if (hit_offset > 10) {
+                ball_speed_y = 2;
+            }
+            else if (hit_offset > 4) {
+                ball_speed_y = 1;
+            }
+            else {
+                ball_speed_y = 0;
+            }
         }
 
         // right paddle movement
@@ -192,6 +209,24 @@ int main(void) {
             ball_speed_x = -ball_speed_x;
             // Push the ball on the left so it doesn't block on the paddle
             ball_x = rpaddle_x - 8;
+
+            // changing angle of the bounce
+            int hit_offset = (ball_y + 4) - (lpaddle_y + 16);
+            if (hit_offset < -10) {
+                ball_speed_y = -2;
+            }
+            else if (hit_offset < -4) {
+                ball_speed_y = -1;
+            }
+            else if (hit_offset > 10) {
+                ball_speed_y = 2;
+            }
+            else if (hit_offset > 4) {
+                ball_speed_y = 1;
+            }
+            else {
+                ball_speed_y = 0;
+            }
         }
 
         // ball bounce on walls
