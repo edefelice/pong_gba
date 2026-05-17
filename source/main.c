@@ -145,10 +145,8 @@ int main(void) {
         ball_y += ball_speed_y;
 
         // left paddle collision
-        int prev_ball_x = ball_x - ball_speed_x;
         if (rect_overlap(ball_x, ball_y, 8, 8,
-                 lpaddle_x, lpaddle_y, 16, 32)
-                && ball_speed_x < 0 && prev_ball_x >= lpaddle_x + 16) {
+                 lpaddle_x, lpaddle_y, 16, 32)) {
             ball_speed_x = -ball_speed_x;
             ball_x = lpaddle_x + 16;
 
@@ -220,8 +218,7 @@ int main(void) {
 
         // right paddle collision
         if (rect_overlap(ball_x, ball_y, 8, 8,
-                 rpaddle_x, rpaddle_y, 16, 32)
-                && ball_speed_x > 0 && prev_ball_x + 8 <= rpaddle_x) {
+                 rpaddle_x, rpaddle_y, 16, 32)) {
             ball_speed_x = -ball_speed_x;
             // Push the ball on the left so it doesn't block on the paddle
             ball_x = rpaddle_x - 8;
