@@ -142,6 +142,84 @@ void update_player_paddle(void) {
         }
 }
 
+// Direction: -1 = left paddle (ball was going left, now goes right)
+//             1 = right paddle (ball was going right, now goes left)
+void handle_paddle_hit(s32 paddle_y, int direction) {
+    ball_speed_x = -ball_speed_x;
+    
+    // Acceleration (limit at MAX_BALL_SPEED)
+    if (direction < 0 && ball_speed_x < MAX_BALL_SPEED) {
+        ball_speed_x++;
+    }
+    if (direction > 0 && ball_speed_x > -MAX_BALL_SPEED) {
+        ball_speed_x--;
+    }
+    
+    // Bounce angle depending on where paddle is hit
+    int hit_offset = (ball_y + BALL_SIZE / 2) - (paddle_y + PADDLE_H / 2);
+    if (hit_offset < -10) {
+        ball_speed_y = -2;
+    } else if (hit_offset < -4) {
+        ball_speed_y = -1;
+    } else if (hit_offset > 10) {
+        ball_speed_y = 2;
+    } else if (hit_offset > 4) {
+        ball_speed_y = 1;
+    } else {
+        ball_speed_y = 0;
+    }
+}
+
+void update_ball(void) {
+    // Update position
+    ball_x += ball_speed_x;
+    ball_y += ball_speed_y;
+    
+    // Left paddle collision
+    if (rect_overlap(ball_x, ball_y, BALL_SIZE, BALL_SIZE,
+                     lpaddle_x, lpaddle_y, PADDLE_W, PADDLE_H)) {
+        ball_x = lpaddle_x + PADDLE_W;
+        handle_paddle_hit(lpaddle_y, -1);
+    }
+    
+    // Right paddle collision
+    if (rect_overlap(ball_x, ball_y, BALL_SIZE, BALL_SIZE,
+                     rpaddle_x, rpaddle_y, PADDLE_W, PADDLE_H)) {
+        ball_x = rpaddle_x - BALL_SIZE;
+        handle_paddle_hit(rpaddle_y, 1);
+    }
+    
+    // Bounce on top/bottom walls
+    if (ball_y < 0 || ball_y > SCREEN_H - BALL_SIZE) {
+        ball_speed_y = -ball_speed_y;
+    }
+    
+    // AI scores (ball exits left)
+    if (ball_x <= 0) {
+        ai_score++;
+        ball_x = SCREEN_W / 2 - BALL_SIZE / 2;
+        ball_y = SCREEN_H / 2 - BALL_SIZE / 2;
+        ball_speed_x = -BASE_SPEED;
+        ball_speed_y = BASE_SPEED;
+        draw_score(player_score, ai_score);
+        if (ai_score >= WIN_SCORE) {
+            game_over = 2;
+        }
+    }
+    // Player scores (ball exits right)
+    if (ball_x >= SCREEN_W - BALL_SIZE) {
+        player_score++;
+        ball_x = SCREEN_W / 2 - BALL_SIZE / 2;
+        ball_y = SCREEN_H / 2 - BALL_SIZE / 2;
+        ball_speed_x = BASE_SPEED;
+        ball_speed_y = BASE_SPEED;
+        draw_score(player_score, ai_score);
+        if (player_score >= WIN_SCORE) {
+            game_over = 1;
+        }
+    }
+}
+
 int main(void) {
 
     // Hide all sprites
@@ -229,102 +307,11 @@ int main(void) {
             continue;
         }
 
-        // update ball position based on speed
-        ball_x += ball_speed_x;
-        ball_y += ball_speed_y;
-
-        // left paddle collision
-        if (rect_overlap(ball_x, ball_y, BALL_SIZE, BALL_SIZE,
-                 lpaddle_x, lpaddle_y, PADDLE_W, PADDLE_H)) {
-            ball_speed_x = -ball_speed_x;
-            ball_x = lpaddle_x + BALL_SIZE;
-
-            // ball acceleration
-            if (ball_speed_x > 0 && ball_speed_x < MAX_BALL_SPEED) {
-                ball_speed_x++;
-            }
-
-            // changing angle of the bounce
-            int hit_offset = (ball_y + BALL_SIZE / 2) - (lpaddle_y + PADDLE_H / 2);
-            if (hit_offset < -10) {
-                ball_speed_y = -2;
-            }
-            else if (hit_offset < -4) {
-                ball_speed_y = -1;
-            }
-            else if (hit_offset > 10) {
-                ball_speed_y = 2;
-            }
-            else if (hit_offset > 4) {
-                ball_speed_y = 1;
-            }
-            else {
-                ball_speed_y = 0;
-            }
-        }
+        // Update Ball position
+        update_ball();
 
         // ai paddle movement
         update_ai_paddle();
-        // right paddle collision
-        if (rect_overlap(ball_x, ball_y, BALL_SIZE, BALL_SIZE,
-                 rpaddle_x, rpaddle_y, PADDLE_W, PADDLE_H)) {
-            ball_speed_x = -ball_speed_x;
-            // Push the ball on the left so it doesn't block on the paddle
-            ball_x = rpaddle_x - BALL_SIZE;
-
-            // ball acceleration
-            if (ball_speed_x < 0 && ball_speed_x > -MAX_BALL_SPEED) {
-                ball_speed_x--;
-            }
-
-            // changing angle of the bounce
-            int hit_offset = (ball_y + BALL_SIZE / 2) - (rpaddle_y + PADDLE_H / 2);
-            if (hit_offset < -10) {
-                ball_speed_y = -2;
-            }
-            else if (hit_offset < -4) {
-                ball_speed_y = -1;
-            }
-            else if (hit_offset > 10) {
-                ball_speed_y = 2;
-            }
-            else if (hit_offset > 4) {
-                ball_speed_y = 1;
-            }
-            else {
-                ball_speed_y = 0;
-            }
-        }
-
-        // ball bounce on walls
-        if(ball_y < 0 || ball_y > SCREEN_H - BALL_SIZE) {
-            ball_speed_y = -ball_speed_y;
-        }
-
-        // ai scores
-        if (ball_x <= 0) {
-            ai_score++;
-            ball_x = SCREEN_W / 2 - BALL_SIZE / 2;
-            ball_y = SCREEN_H / 2 - BALL_SIZE / 2;
-            ball_speed_x = -BASE_SPEED; // reset to base speed (restart going left)
-            ball_speed_y = BASE_SPEED;
-            draw_score(player_score, ai_score);
-            if (ai_score >= WIN_SCORE) {
-                game_over = 2;
-            }
-        }
-        // player scores
-        if (ball_x >= SCREEN_W - BALL_SIZE) {
-            player_score++;
-            ball_x = SCREEN_W / 2 - BALL_SIZE / 2;
-            ball_y = SCREEN_H / 2 - BALL_SIZE / 2;
-            ball_speed_x = BASE_SPEED; // reset to base speed (restart going right)
-            ball_speed_y = BASE_SPEED;
-            draw_score(player_score, ai_score);
-            if (player_score >= WIN_SCORE) {
-                game_over = 1;
-            }
-        }
 
         // read input
         update_player_paddle();
