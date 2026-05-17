@@ -2,7 +2,7 @@
 // all_gfx.h
 //
 // Header che unisce tutti gli header grafici
-// Data: 2026-05-17 16:49:31
+// Data: 2026-05-17 17:13:29
 
 #ifdef __cplusplus
 extern "C"{
@@ -18,7 +18,7 @@ extern "C"{
 //	+ 1 tiles not compressed
 //	Total size: 512 + 32 = 544
 //
-//	Time-stamp: 2026-05-17, 16:49:31
+//	Time-stamp: 2026-05-17, 17:13:29
 //	Exported by Cearn's GBA Image Transmogrifier, v0.9.2
 //	( http://www.coranac.com/projects/#grit )
 //
@@ -47,7 +47,7 @@ extern const unsigned short ballPal[256];
 //	+ regular map (in SBBs), not compressed, 32x32 
 //	Total size: 512 + 96 + 2048 = 2656
 //
-//	Time-stamp: 2026-05-17, 16:49:31
+//	Time-stamp: 2026-05-17, 17:13:29
 //	Exported by Cearn's GBA Image Transmogrifier, v0.9.2
 //	( http://www.coranac.com/projects/#grit )
 //
@@ -79,7 +79,7 @@ extern const unsigned short courtPal[256];
 //	+ regular map (flat), not compressed, 10x1 
 //	Total size: 512 + 352 + 20 = 884
 //
-//	Time-stamp: 2026-05-17, 16:49:31
+//	Time-stamp: 2026-05-17, 17:13:29
 //	Exported by Cearn's GBA Image Transmogrifier, v0.9.2
 //	( http://www.coranac.com/projects/#grit )
 //
@@ -111,7 +111,7 @@ extern const unsigned short fontPal[256];
 //	+ 4 tiles not compressed
 //	Total size: 512 + 128 = 640
 //
-//	Time-stamp: 2026-05-17, 16:49:31
+//	Time-stamp: 2026-05-17, 17:13:29
 //	Exported by Cearn's GBA Image Transmogrifier, v0.9.2
 //	( http://www.coranac.com/projects/#grit )
 //
