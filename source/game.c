@@ -2,9 +2,7 @@
 #include "../include/registers.h"
 #include "../include/all_gfx.h"
 #include "../include/game.h"
-
-// Forward declaration: render_sprites is in graphics.c
-void render_sprites(void);
+#include "../include/graphics.h"
 
 // --- Game state (definitions) ---
 int player_score;
