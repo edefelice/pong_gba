@@ -145,8 +145,10 @@ int main(void) {
         ball_y += ball_speed_y;
 
         // left paddle collision
+        int prev_ball_x = ball_x - ball_speed_x;
         if (rect_overlap(ball_x, ball_y, 8, 8,
-                 lpaddle_x, lpaddle_y, 16, 32)) {
+                 lpaddle_x, lpaddle_y, 16, 32)
+                && ball_speed_x < 0 && prev_ball_x >= lpaddle_x + 16) {
             ball_speed_x = -ball_speed_x;
             ball_x = lpaddle_x + 16;
 
@@ -209,16 +211,17 @@ int main(void) {
             }
         }
         // Clipping
-        if (rpaddle_y < 0) {
-            rpaddle_y = 0;
+        if (rpaddle_y < 16) {
+            rpaddle_y = 16;
         }
-        if (rpaddle_y > SCREEN_H - 32) {
-            rpaddle_y = SCREEN_H - 32;
+        if (rpaddle_y > SCREEN_H - 48) {
+            rpaddle_y = SCREEN_H - 48;
         }
 
         // right paddle collision
         if (rect_overlap(ball_x, ball_y, 8, 8,
-                 rpaddle_x, rpaddle_y, 16, 32)) {
+                 rpaddle_x, rpaddle_y, 16, 32)
+                && ball_speed_x > 0 && prev_ball_x + 8 <= rpaddle_x) {
             ball_speed_x = -ball_speed_x;
             // Push the ball on the left so it doesn't block on the paddle
             ball_x = rpaddle_x - 8;
@@ -283,15 +286,15 @@ int main(void) {
         u16 keys = ~REG_KEYINPUT & KEY_MASK;
         if (keys & KEY_UP) {
             lpaddle_y -= lpaddle_speed;
-            if (lpaddle_y < 0) {
-                lpaddle_y = 0;
+            if (lpaddle_y < 16) {
+                lpaddle_y = 16;
             }
         }
 
         if (keys & KEY_DOWN) {
             lpaddle_y += lpaddle_speed;
-            if (lpaddle_y > SCREEN_H - 32) {
-                lpaddle_y = SCREEN_H - 32;
+            if (lpaddle_y > SCREEN_H - 48) {
+                lpaddle_y = SCREEN_H - 48;
             }
         }
 
