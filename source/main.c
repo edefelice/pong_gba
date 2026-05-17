@@ -150,6 +150,11 @@ int main(void) {
             ball_speed_x = -ball_speed_x;
             ball_x = lpaddle_x + 16;
 
+            // ball acceleration
+            if (ball_speed_x > 0 && ball_speed_x < 3) {
+                ball_speed_x++;
+            }
+
             // changing angle of the bounce
             int hit_offset = (ball_y + 4) - (lpaddle_y + 16);
             if (hit_offset < -10) {
@@ -218,6 +223,11 @@ int main(void) {
             // Push the ball on the left so it doesn't block on the paddle
             ball_x = rpaddle_x - 8;
 
+            // ball acceleration
+            if (ball_speed_x < 0 && ball_speed_x > -3) {
+                ball_speed_x--;
+            }
+
             // changing angle of the bounce
             int hit_offset = (ball_y + 4) - (lpaddle_y + 16);
             if (hit_offset < -10) {
@@ -249,7 +259,8 @@ int main(void) {
             flash_timer = flash_duration;
             ball_x = SCREEN_W / 2;
             ball_y = SCREEN_H / 2;
-            ball_speed_x = -ball_speed_x;
+            ball_speed_x = -1; // reset to base speed (restart going left)
+            ball_speed_y = 1;
             if (ai_score >= win_score) {
                 game_over = 2;
             }
@@ -261,7 +272,8 @@ int main(void) {
             flash_timer = flash_duration;
             ball_x = SCREEN_W / 2;
             ball_y = SCREEN_H / 2;
-            ball_speed_x = -ball_speed_x;
+            ball_speed_x = 1; // reset to base speed (restart going right)
+            ball_speed_y = 1;
             if (player_score >= win_score) {
                 game_over = 1;
             }
