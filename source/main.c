@@ -4,18 +4,19 @@
 #include "../include/all_gfx.h"
 
 // --- Game constants ---
-#define DEAD_ZONE     16
+#define DEAD_ZONE      4
 #define PADDLE_W       8
 #define PADDLE_H      32
 #define BALL_SIZE      8
-#define WIN_SCORE      2
-#define BASE_SPEED     1
-#define MAX_BALL_SPEED 3
+#define WIN_SCORE      11
+#define BASE_SPEED     2
+#define MAX_BALL_SPEED 6
 
 // --- Game state ---
 u32 player_score;
 u32 ai_score;
 int game_over;
+int hit_counter;
 
 s32 ball_x;
 s32 ball_y;
@@ -64,11 +65,13 @@ void reset_game(void) {
     player_score = 0;
     ai_score = 0;
     game_over = 0;
+    hit_counter = 0;
+    u16 r = REG_VCOUNT;
     
     ball_x = SCREEN_W / 2 - BALL_SIZE / 2;
     ball_y = SCREEN_H / 2 - BALL_SIZE / 2;
-    ball_speed_x = BASE_SPEED;
-    ball_speed_y = BASE_SPEED;
+    ball_speed_x = (r & 1) ? BASE_SPEED : -BASE_SPEED;
+    ball_speed_y = (r & 2) ? BASE_SPEED : -BASE_SPEED;
     
     lpaddle_x = 16;
     lpaddle_y = SCREEN_H / 2 - PADDLE_H / 2;
@@ -88,8 +91,9 @@ void update_ai_paddle(void) {
         // The ball is coming, predict y position
         int dx = rpaddle_x - ball_x;
         int frames_to_reach = dx / ball_speed_x;
-        int predicted_y = ball_y + ball_speed_y * frames_to_reach;
-    
+        int error = (frames_to_reach % 51);
+        int predicted_y = ball_y + ball_speed_y * error;
+
         // Bounce on walls case
         if (predicted_y < 0) {
             predicted_y = -predicted_y;
@@ -97,12 +101,13 @@ void update_ai_paddle(void) {
         if (predicted_y > SCREEN_H - BALL_SIZE) {
             predicted_y = 2 * (SCREEN_H - BALL_SIZE) - predicted_y;
         }
-    
-        int target = predicted_y - DEAD_ZONE;
-        if (rpaddle_y < target) {
+
+        int target = predicted_y - PADDLE_H / 2;
+        int diff = target - rpaddle_y;
+        if (diff > rpaddle_speed) {
             rpaddle_y += rpaddle_speed;
         }
-        else if (rpaddle_y > target) {
+        else if (diff < -rpaddle_speed) {
             rpaddle_y -= rpaddle_speed;
         }
     }
@@ -147,13 +152,18 @@ void update_player_paddle(void) {
 void handle_paddle_hit(s32 paddle_y, int direction) {
     ball_speed_x = -ball_speed_x;
     
-    // Acceleration (limit at MAX_BALL_SPEED)
+    // Acceleration (limit at MAX_BALL_SPEED) every 2 ai hits
+    // Acceleration every 2 paddle hits (any side)
+    hit_counter++;
+    if (hit_counter >= 8) {
+    hit_counter = 0;
     if (direction < 0 && ball_speed_x < MAX_BALL_SPEED) {
         ball_speed_x++;
     }
     if (direction > 0 && ball_speed_x > -MAX_BALL_SPEED) {
         ball_speed_x--;
     }
+}
     
     // Bounce angle depending on where paddle is hit
     int hit_offset = (ball_y + BALL_SIZE / 2) - (paddle_y + PADDLE_H / 2);
@@ -200,11 +210,12 @@ void update_ball(void) {
         ball_x = SCREEN_W / 2 - BALL_SIZE / 2;
         ball_y = SCREEN_H / 2 - BALL_SIZE / 2;
         ball_speed_x = -BASE_SPEED;
-        ball_speed_y = BASE_SPEED;
+        ball_speed_y = (REG_VCOUNT & 1) ? BASE_SPEED : -BASE_SPEED;
         draw_score(player_score, ai_score);
         if (ai_score >= WIN_SCORE) {
             game_over = 2;
         }
+        hit_counter = 0;
     }
     // Player scores (ball exits right)
     if (ball_x >= SCREEN_W - BALL_SIZE) {
@@ -212,11 +223,12 @@ void update_ball(void) {
         ball_x = SCREEN_W / 2 - BALL_SIZE / 2;
         ball_y = SCREEN_H / 2 - BALL_SIZE / 2;
         ball_speed_x = BASE_SPEED;
-        ball_speed_y = BASE_SPEED;
+        ball_speed_y = (REG_VCOUNT & 1) ? BASE_SPEED : -BASE_SPEED;
         draw_score(player_score, ai_score);
         if (player_score >= WIN_SCORE) {
             game_over = 1;
         }
+        hit_counter = 0;
     }
 }
 
@@ -313,6 +325,14 @@ int main(void) {
             handle_game_over();
             continue;
         }
+
+        static int frame_counter = 0;
+        frame_counter++;
+        if (frame_counter < 2) {
+            render_sprites();
+            continue;
+        }
+        frame_counter = 0;
 
         update_ball();
         update_ai_paddle();
