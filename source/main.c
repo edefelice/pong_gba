@@ -19,6 +19,20 @@ int rect_overlap(int ax, int ay, int aw, int ah,
            (ay < by + bh) && (ay + ah > by);
 }
 
+void draw_score (int player, int ai) {
+    int font_base = courtTilesLen / 32 + 1;
+    int blank_tile = 0;
+
+    // player score on top left
+    MEM_VRAM_SCREENBLOCK(28)[32 + 2] = (player >= 10) ? font_base + (player / 10) : blank_tile;
+    MEM_VRAM_SCREENBLOCK(28)[32 + 3] = font_base + (player % 10);
+
+    // ai score on top right
+    MEM_VRAM_SCREENBLOCK(28)[32 + 27] = (ai >= 10) ? font_base + (ai / 10) : blank_tile;
+    MEM_VRAM_SCREENBLOCK(28)[32 + 28] = font_base + (ai % 10);
+
+}
+
 int main(void) {
 
     // score
@@ -71,6 +85,10 @@ int main(void) {
     // Load background palette
     memcpy(MEM_PAL_BG, courtPal, courtPalLen);
 
+    // Load font tiles in VRAM
+    int font_base_tile = courtTilesLen / 32;
+    memcpy(&MEM_VRAM_CHARBLOCK(0)[(font_base_tile * 16)], fontTiles, fontTilesLen);
+
     // Set OAM
     // Ball at the centre of the screen.
     oam_buffer[0].attr0 = ATTR0_Y(ball_y) | ATTR0_SQUARE | ATTR0_4BPP;
@@ -94,6 +112,7 @@ int main(void) {
     // Set display mode 0, sprite on, mapping 1D, BG0
     REG_DISPCNT = DCNT_MODE0 | DCNT_BG0 | DCNT_OBJ | DCNT_OBJ_1D;
 
+    draw_score(0, 0); // initialize score
     while(1) {
         // VBlank wait
         while (REG_VCOUNT >= SCREEN_H);
@@ -136,6 +155,7 @@ int main(void) {
                 flash_paddle = 0;
                 game_over = 0;
                 MEM_PAL_BG[0] = 0x0000;  // black background
+                draw_score(0, 0);
             }
             continue;
         }
@@ -229,7 +249,7 @@ int main(void) {
             }
 
             // changing angle of the bounce
-            int hit_offset = (ball_y + 4) - (lpaddle_y + 16);
+            int hit_offset = (ball_y + 4) - (rpaddle_y + 16);
             if (hit_offset < -10) {
                 ball_speed_y = -2;
             }
@@ -261,6 +281,7 @@ int main(void) {
             ball_y = SCREEN_H / 2 - 4;
             ball_speed_x = -1; // reset to base speed (restart going left)
             ball_speed_y = 1;
+            draw_score(player_score, ai_score);
             if (ai_score >= win_score) {
                 game_over = 2;
             }
@@ -274,6 +295,7 @@ int main(void) {
             ball_y = SCREEN_H / 2 - 4;
             ball_speed_x = 1; // reset to base speed (restart going right)
             ball_speed_y = 1;
+            draw_score(player_score, ai_score);
             if (player_score >= win_score) {
                 game_over = 1;
             }

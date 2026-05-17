@@ -2,7 +2,7 @@
 // all_gfx.h
 //
 // Header che unisce tutti gli header grafici
-// Data: 2026-05-17 13:00:46
+// Data: 2026-05-17 16:49:31
 
 #ifdef __cplusplus
 extern "C"{
@@ -18,7 +18,7 @@ extern "C"{
 //	+ 1 tiles not compressed
 //	Total size: 512 + 32 = 544
 //
-//	Time-stamp: 2026-05-17, 13:00:45
+//	Time-stamp: 2026-05-17, 16:49:31
 //	Exported by Cearn's GBA Image Transmogrifier, v0.9.2
 //	( http://www.coranac.com/projects/#grit )
 //
@@ -47,7 +47,7 @@ extern const unsigned short ballPal[256];
 //	+ regular map (in SBBs), not compressed, 32x32 
 //	Total size: 512 + 96 + 2048 = 2656
 //
-//	Time-stamp: 2026-05-17, 13:00:46
+//	Time-stamp: 2026-05-17, 16:49:31
 //	Exported by Cearn's GBA Image Transmogrifier, v0.9.2
 //	( http://www.coranac.com/projects/#grit )
 //
@@ -69,6 +69,38 @@ extern const unsigned short courtPal[256];
 
 //}}BLOCK(court)
 
+//{{BLOCK(font)
+
+//======================================================================
+//
+//	font, 80x8@4, 
+//	+ palette 256 entries, not compressed
+//	+ 11 tiles not compressed
+//	+ regular map (flat), not compressed, 10x1 
+//	Total size: 512 + 352 + 20 = 884
+//
+//	Time-stamp: 2026-05-17, 16:49:31
+//	Exported by Cearn's GBA Image Transmogrifier, v0.9.2
+//	( http://www.coranac.com/projects/#grit )
+//
+//======================================================================
+
+#ifndef GRIT_FONT_H
+#define GRIT_FONT_H
+
+#define fontTilesLen 352
+extern const unsigned int fontTiles[88];
+
+#define fontMapLen 20
+extern const unsigned short fontMap[10];
+
+#define fontPalLen 512
+extern const unsigned short fontPal[256];
+
+#endif // GRIT_FONT_H
+
+//}}BLOCK(font)
+
 //{{BLOCK(paddle)
 
 //======================================================================
@@ -79,7 +111,7 @@ extern const unsigned short courtPal[256];
 //	+ 4 tiles not compressed
 //	Total size: 512 + 128 = 640
 //
-//	Time-stamp: 2026-05-17, 13:00:46
+//	Time-stamp: 2026-05-17, 16:49:31
 //	Exported by Cearn's GBA Image Transmogrifier, v0.9.2
 //	( http://www.coranac.com/projects/#grit )
 //
