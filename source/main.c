@@ -39,7 +39,6 @@ int main(void) {
     s32 ball_y = SCREEN_H / 2 - 4;
     s32 ball_speed_x = 1;
     s32 ball_speed_y = 1;
-    u32 ai_counter = 0;
 
     // paddles position and speed initialization
     s32 lpaddle_x = 16;
@@ -171,36 +170,45 @@ int main(void) {
         }
 
         // right paddle movement
-        // AI follows the ball
-        int rpaddle_center = rpaddle_y + 16;  // paddle vertical centre (h=32, half is 16)
-        int ball_center = ball_y + 4;         // ball center (h=8, half is 4)
-
-        ai_counter++;
-        if (ai_counter >= 2) {
-            ai_counter = 0;
-            if (ball_speed_x > 0) {
-                if (ball_center < rpaddle_center) {
-                    rpaddle_y -= rpaddle_speed;
-                }
-                else if (ball_center > rpaddle_center) {
-                    rpaddle_y += rpaddle_speed;
-                }
+        // Predictive AI
+        if (ball_speed_x > 0) {
+            // The ball is coming, predict position
+            int dx = rpaddle_x - ball_x;
+            int frames_to_reach = dx / ball_speed_x;
+            int predicted_y = ball_y + ball_speed_y * frames_to_reach;
+    
+            // Bounce on walls case
+            if (predicted_y < 0) {
+                predicted_y = -predicted_y;
             }
-            else {
-                int center = SCREEN_H / 2 - 16;
-                if (rpaddle_y < center) {
-                    rpaddle_y += rpaddle_speed;
-                }
-                else if (rpaddle_y > center) {
-                    rpaddle_y -= rpaddle_speed;
-                }
+            if (predicted_y > SCREEN_H - 8) {
+                predicted_y = 2 * (SCREEN_H - 8) - predicted_y;
+            }
+    
+            int target = predicted_y - 16;
+            if (rpaddle_y < target) {
+                rpaddle_y += rpaddle_speed;
+            }
+            else if (rpaddle_y > target) {
+                rpaddle_y -= rpaddle_speed;
+            }
         }
+        else {
+            // The ball is going away, come back to the center
+            int center = SCREEN_H / 2 - 16;
+            if (rpaddle_y < center) {
+                rpaddle_y += rpaddle_speed;
+            }
+            else if (rpaddle_y > center) {
+                rpaddle_y -= rpaddle_speed;
+            }
+        }
+        // Clipping
         if (rpaddle_y < 0) {
             rpaddle_y = 0;
         }
         if (rpaddle_y > SCREEN_H - 32) {
             rpaddle_y = SCREEN_H - 32;
-        }
         }
 
         // right paddle collision
