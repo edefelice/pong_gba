@@ -83,6 +83,6 @@ int main(void) {
 
         render_sprites();
     }
-    return 0;
     
+    return 0;
 }

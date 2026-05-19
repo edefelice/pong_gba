@@ -102,7 +102,7 @@ void reset_game(void) {
     
     rpaddle_x = SCREEN_W - PADDLE_MARGIN - PADDLE_W;
     rpaddle_y = SCREEN_H / 2 - PADDLE_H / 2;
-    rpaddle_speed = 1;
+    rpaddle_speed = 2;
     
     MEM_PAL_BG[0] = 0x0000;
     draw_score(0, 0);
@@ -162,12 +162,11 @@ void update_ball(void) {
 
 void update_ai_paddle(void) {
 
-    if (ball_speed_x > 0) {
+    if (ball_speed_x > 0 && ball_x > SCREEN_W / 3) {
         // The ball is coming, predict y position
         int dx = rpaddle_x - ball_x;
         int frames_to_reach = dx / ball_speed_x;
-        int error = (frames_to_reach % 51);
-        int predicted_y = ball_y + ball_speed_y * error;
+        int predicted_y = ball_y + ball_speed_y * frames_to_reach;
 
         // Bounce on walls case
         if (predicted_y < 0) {
@@ -177,8 +176,9 @@ void update_ai_paddle(void) {
             predicted_y = 2 * (SCREEN_H - BALL_SIZE) - predicted_y;
         }
 
-        int target = predicted_y - PADDLE_H / 2;
+        int target = predicted_y - PADDLE_H / 2; // center paddle on predicted ball y
         int diff = target - rpaddle_y;
+        // Move toward terget with tolerance to prevent jitter
         if (diff > rpaddle_speed) {
             rpaddle_y += rpaddle_speed;
         }

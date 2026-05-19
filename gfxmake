@@ -1,7 +1,7 @@
 #
-# Makefile per creare una libreria grafica dall'output di grit.
+# Makefile create a graphics library from grit output.
 #
-# Utilizzare solo per vettori di dati. NIENTE CODICE!
+# Use for data array only.
 
 #
 # SETUP
@@ -16,13 +16,13 @@ GRIT := grit
 include $(DEVKITARM)/base_rules
 
 #
-# (1) DETTAGLI DEL PROGETTO
+# (1) PROJECT DETAILS
 #
 
-# GFXTITLE -> nome della libreria.
-# BUILD    -> cartella per i file temporanei del processo di build. NON dovrebbe essere vuota!
-# GFXDIRS  -> lista di cartelle di immagini.
-# GFXEXTS  -> estensioni di file delle immagini.
+# GFXTITLE -> lib name
+# BUILD    -> temporary build files folder. Should NOT be empty!
+# GFXDIRS  -> images folder list.
+# GFXEXTS  -> image files extensions.
 
 
 BUILD   := build
@@ -32,12 +32,10 @@ GFXLIB  ?= $(LIBDIRS)/libgfx.a
 GFXHDR  ?= all_gfx.h
 GFXEXTS := png bmp
 
-# ECCEZIONI
-# Aggiungere qui file/variabili per i file per le regole speciali.
-# Inserire le regole in fondo al Makefile. Attenzione alle cartelle,
-# quando convertiamo ci troviamo in $(BUILD).
-# GFXSPECIALS -> file rimossi da GFXFILES.
-# OSPECIALS   -> file aggiunti ad OFILES.
+# EXCEPTIONS
+# Add here special rules.
+# GFXSPECIALS -> file removed from GFXFILES.
+# OSPECIALS   -> file added to OFILES.
 
 # es:
 # export LOZLEVEL1 ?= $(notdir $(wildcard level1/*.png))
@@ -47,19 +45,18 @@ GFXEXTS := png bmp
 # OSPECIALS          := level1.o palmerge.o
 
 # BUILD FLAGS
-# Poiché non c'è codice da compilare, non c'è bisogno di ottimizzazione, architetture ecc.
 
 CFLAGS   :=
 CXXFLAGS := $(CFLAGS) -fno-rtti -fno-exceptions
 ASFLAGS  :=
 
 #
-# (2) PROCEDURA DI BUILD
+# (2) BUILD PROCEDURE
 #
 
 ifneq ($(BUILD), $(notdir $(CURDIR)))
 
-# Siamo ancora nella cartella del progetto.
+# Inside the project folder.
 
 export TARGET  := $(CURDIR)/$(GFXLIB)
 export VPATH   := $(foreach dir, $(GFXDIRS), $(CURDIR)/$(dir))
@@ -76,7 +73,7 @@ export OFILES  := $(addsuffix .o, $(basename $(GFXFILES))) $(OSPECIALS)
 
 $(BUILD):
 	@[ -d $@ ] || mkdir -p $@
-	@[ -d $(LIBDIRS)] || mkdir -p $(LIBDIRS)
+	@[ -d $(LIBDIRS) ] || mkdir -p $(LIBDIRS)
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/gfxmake
 
 clean:
@@ -101,10 +98,10 @@ $(GFXHDR): $(OFILES)
 	@$(call master-header, $@, $(notdir $(^:.o=.h)))
 
 #
-# (3) REGOLE BASE DI CONVERSIONE
+# (3) BASE RULES
 #
 
-# Con un file .grit separato.
+# with separate .grit file
 
 %.s %.h: %.png %.grit
 	$(GRIT) $< -fts
@@ -118,7 +115,7 @@ $(GFXHDR): $(OFILES)
 %.s %.h: %.jpg %.grit
 	$(GRIT) $< -fts
 
-# Senza file .grit; usa dirname/dirname.grit per le opzioni.
+# whitout .grit file; use dirname/dirname.grit for the options.
 
 %.s %.h: %.png
 	$(GRIT) $< -fts -ff $(<D)/$(notdir $(<D)).grit
@@ -132,23 +129,23 @@ $(GFXHDR): $(OFILES)
 %.s %.h: %.jpg
 	$(GRIT) $< -fts -ff $(<D)/$(notdir $(<D)).grit
 
-# (4) REGOLE SPECIALI
+# (4) SPECIAL RULES
 
-# (5) ALTRE FUNZIONI UTILI
+# (5) OTHER USEFUL FUNCTIONS
 
-# Unisce tutti gli header in un unico file per facilitare l'inclusione.
+# Composing a single header file to facilitate graphics inclusion.
 
-define master-header # $1 : master path, $2 path degli header separati
+define master-header # $1 : master path, $2 separated headers paths
 	echo -e "//\n// $(notdir $(strip $1))\n//" > $1
-	echo -e "// Header che unisce tutti gli header grafici" >> $1
-	echo -e "// Data: $(shell date +'%F %T')\n" >> $1
+	echo -e "// Header that merges all graphics headers" >> $1
+	echo -e "// Date: $(shell date +'%F %T')\n" >> $1
 	echo -e "#ifdef __cplusplus\nextern \"C\"{\n#endif" >> $1
 	cat $2 >> $1
 	echo -e "\n#ifdef __cplusplus\n};\n#endif\n" >> $1
 	mv $1 ../include/
 endef
 
-# DIPENDENZE
+# Dependencies
 
 -include $(DEPENDS)
 
