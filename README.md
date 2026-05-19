@@ -38,7 +38,7 @@ Produces `pong_gba.gba`, which can be run on any GBA emulator (e.g. mGBA) or fla
 
 ## Limitations
 
-- No audio: sound is out of scope this release and is planned for a future project.
+- No audio: sound is out of scope for this release and is planned for a future project.
 
 ## Project structure
 
