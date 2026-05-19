@@ -36,6 +36,10 @@ Produces `pong_gba.gba`, which can be run on any GBA emulator (e.g. mGBA) or fla
 - **Ball physics**: accelerates every four paddle hits up to a capped speed, with bounce angle determined by the contact point on the paddle.
 - **Score** is rendered as background tiles, updated in place when points are scored.
 
+## Limitations
+
+- No audio: sound is out of scope this release and is planned for a future project.
+
 ## Project structure
 
 ```
