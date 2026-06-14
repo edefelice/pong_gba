@@ -25,6 +25,7 @@ BUILD		:= build
 SOURCES		:= source
 INCLUDES	:= include
 DATA		:=
+GRAPHICS	:= graphics
 MUSIC		:=
 
 
@@ -47,8 +48,7 @@ LDFLAGS	=	-g $(ARCH) -Wl,-Map,$(notdir $*.map)
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-GFXLIBS ?= libgfx.a
-LIBS	:= -lmm -lgba -lgfx
+LIBS	:= -lmm -lgba
 
 
 #---------------------------------------------------------------------------------
@@ -78,6 +78,7 @@ CFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
 CPPFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
 SFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
 BINFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
+PNGFILES	:=	$(foreach dir,$(GRAPHICS),$(notdir $(wildcard $(dir)/*.png)))
 
 ifneq ($(strip $(MUSIC)),)
 	export AUDIOFILES	:=	$(foreach dir,$(notdir $(wildcard $(MUSIC)/*.*)),$(CURDIR)/$(MUSIC)/$(dir))
@@ -100,11 +101,11 @@ endif
 
 export OFILES_BIN := $(addsuffix .o,$(BINFILES))
 
-export OFILES_SOURCES := $(CPPFILES:.cpp=.o) $(CFILES:.c=.o) $(SFILES:.s=.o)
+export OFILES_SOURCES := $(CPPFILES:.cpp=.o) $(CFILES:.c=.o) $(SFILES:.s=.o) $(PNGFILES:.png=.o)
 
 export OFILES := $(OFILES_BIN) $(OFILES_SOURCES)
 
-export HFILES := $(addsuffix .h,$(subst .,_,$(BINFILES)))
+export HFILES := $(addsuffix .h,$(subst .,_,$(BINFILES))) $(PNGFILES:.png=.h)
 
 export INCLUDE	:=	$(foreach dir,$(INCLUDES),-iquote $(CURDIR)/$(dir)) \
 					$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
@@ -117,7 +118,6 @@ export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib)
 #---------------------------------------------------------------------------------
 $(BUILD):
 	@[ -d $@ ] || mkdir -p $@
-	@$(MAKE) --no-print-directory -f $(CURDIR)/gfxmake
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
 
 #---------------------------------------------------------------------------------
@@ -135,7 +135,7 @@ else
 
 $(OUTPUT).gba	:	$(OUTPUT).elf
 
-$(OUTPUT).elf	:	$(OFILES) $(GFXLIBS)
+$(OUTPUT).elf	:	$(OFILES)
 
 $(OFILES_SOURCES) : $(HFILES)
 
@@ -159,6 +159,14 @@ soundbank.bin soundbank.h : $(AUDIOFILES)
 	@echo $(notdir $<)
 	@$(bin2o)
 
+# With a separate .grit file
+%.s %.h: %.png %.grit
+	@echo $(notdir $<)
+	@grit $< -fts
+
+# Without .grit file; use dirname/dirname.grit for grit options.
+%.s %.h: %.png
+	@grit $< -fts -ff $(<D)/$(notdir $(<D)).grit
 
 -include $(DEPSDIR)/*.d
 #---------------------------------------------------------------------------------------

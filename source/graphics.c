@@ -1,7 +1,7 @@
 #include <string.h>
-#include "../include/registers.h"
-#include "../include/game.h"
-#include "../include/graphics.h"
+#include "registers.h"
+#include "game.h"
+#include "graphics.h"
 
 void render_sprites(void) {
     oam_buffer[0].attr0 = ATTR0_Y(ball_y) | ATTR0_SQUARE | ATTR0_4BPP;

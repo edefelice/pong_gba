@@ -1,9 +1,11 @@
 #include <string.h>
-
-#include "../include/registers.h"
-#include "../include/game.h"
-#include "../include/graphics.h"
-#include "../include/all_gfx.h"
+#include "registers.h"
+#include "game.h"
+#include "graphics.h"
+#include "ball.h"
+#include "paddle.h"
+#include "court.h"
+#include "font.h"
 
 
 int main(void) {

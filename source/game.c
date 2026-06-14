@@ -1,8 +1,11 @@
 #include <string.h>
-#include "../include/registers.h"
-#include "../include/all_gfx.h"
-#include "../include/game.h"
-#include "../include/graphics.h"
+#include "registers.h"
+#include "game.h"
+#include "graphics.h"
+#include "ball.h"
+#include "paddle.h"
+#include "court.h"
+#include "font.h"
 
 // --- Game state (definitions) ---
 int player_score;
