@@ -12,8 +12,6 @@ build/
 *.img.bin
 *.map.bin
 *.pal.bin
-lib/libgfx.a
-include/all_gfx.h
 
 # Editor / IDE
 .vscode/
