@@ -2,10 +2,7 @@
 #include "registers.h"
 #include "game.h"
 #include "graphics.h"
-#include "ball.h"
-#include "paddle.h"
 #include "court.h"
-#include "font.h"
 
 // --- Game state (definitions) ---
 int player_score;
