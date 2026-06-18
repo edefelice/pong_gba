@@ -2,10 +2,10 @@
 #include "registers.h"
 #include "game.h"
 #include "graphics.h"
-#include "ball.h"
-#include "paddle.h"
-#include "court.h"
-#include "font.h"
+#include "graphics/ball.h"
+#include "graphics/paddle.h"
+#include "graphics/court.h"
+#include "graphics/font.h"
 
 
 int main(void) {

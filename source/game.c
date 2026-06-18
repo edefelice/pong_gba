@@ -2,7 +2,7 @@
 #include "registers.h"
 #include "game.h"
 #include "graphics.h"
-#include "court.h"
+#include "graphics/court.h"
 
 // --- Game state (definitions) ---
 int player_score;
@@ -34,7 +34,7 @@ static int rect_overlap(int ax, int ay, int aw, int ah,
 }
 
 static void draw_score (int player, int ai) {
-    int font_base = courtTilesLen / 32 + 1;
+    int font_base = courtTilesLen / 32 + 1; // +1: tile 0 is blank, digits start at index 1
     int blank_tile = 0;
 
     // player score on top left
@@ -52,7 +52,7 @@ static void draw_score (int player, int ai) {
 void handle_paddle_hit(s32 paddle_y, int direction) {
     ball_speed_x = -ball_speed_x;
     
-    // Acceleration (limit at MAX_BALL_SPEED) every 2 paddle hits (any side)
+    // Acceleration (limit at MAX_BALL_SPEED) every 8 paddle hits (any side)
     hit_counter++;
     if (hit_counter >= 8) {
         hit_counter = 0;
@@ -128,7 +128,12 @@ void update_ball(void) {
     }
     
     // Bounce on top/bottom walls
-    if (ball_y < 0 || ball_y > SCREEN_H - BALL_SIZE) {
+    if (ball_y < 0) {
+        ball_y = 0;
+        ball_speed_y = -ball_speed_y;
+    }
+    else if (ball_y > SCREEN_H - BALL_SIZE) {
+        ball_y = SCREEN_H - BALL_SIZE;
         ball_speed_y = -ball_speed_y;
     }
     
@@ -178,7 +183,7 @@ void update_ai_paddle(void) {
 
         int target = predicted_y - PADDLE_H / 2; // center paddle on predicted ball y
         int diff = target - rpaddle_y;
-        // Move toward terget with tolerance to prevent jitter
+        // Move toward target with tolerance to prevent jitter
         if (diff > rpaddle_speed) {
             rpaddle_y += rpaddle_speed;
         }
