@@ -60,3 +60,5 @@ graphics/         - PNG sources and grit conversion configs
 ## Credits
 
 Author: Ernesto De Felice ([@edefelice](https://github.com/edefelice))
+
+© 2026 Ernesto De Felice. All rights reserved.
